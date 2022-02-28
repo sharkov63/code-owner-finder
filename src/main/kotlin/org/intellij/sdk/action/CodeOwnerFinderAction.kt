@@ -4,10 +4,11 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 
-
 class CodeOwnerFinderAction: AnAction() {
+
     override fun actionPerformed(event: AnActionEvent) {
-        TODO("Write your code here")
+        val performer = CodeOwnerFinderPerformer(event)
+        performer.perform()
     }
 
     override fun update(event: AnActionEvent) {
