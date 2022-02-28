@@ -1,0 +1,27 @@
+<idea-plugin>
+    <id>org.example.code-owner-finder</id>
+    <name>Hello</name>
+    <vendor email="support@yourcompany.com" url="http://www.yourcompany.com">YourName</vendor>
+
+    <description><![CDATA[ 
+        IntelliJ Plugin for finding the code owner (JB Bootcamp test task)
+]]></description>
+
+    <!-- please see https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html
+         on how to target different products -->
+    <depends>com.intellij.modules.platform</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <!-- Add your extensions here -->
+    </extensions>
+
+    <actions>
+        <!-- Add your actions here -->
+        <action id="org.intellij.sdk.action.CodeOwnerFinderAction" 
+                class="org.intellij.sdk.action.CodeOwnerFinderAction" 
+                text="Find Code Owner..."
+                description="JB Bootcamp test task" >
+            <add-to-group group-id="ProjectViewPopupMenu" anchor="first"/>
+        </action>
+    </actions>
+</idea-plugin>
