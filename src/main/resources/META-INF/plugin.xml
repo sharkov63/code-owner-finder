@@ -1,7 +1,7 @@
 <idea-plugin>
     <id>org.example.code-owner-finder</id>
-    <name>Hello</name>
-    <vendor email="support@yourcompany.com" url="http://www.yourcompany.com">YourName</vendor>
+    <name>Code Owner Finder</name>
+    <vendor email="duesna897@gmail.com" url="https://github.com/sharkov63">Danila Usachev</vendor>
 
     <description><![CDATA[ 
         IntelliJ Plugin for finding the code owner (JB Bootcamp test task)
