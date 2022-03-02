@@ -81,6 +81,23 @@ private fun Diff.Change.toAtomicChange(): AtomicChange {
  */
 data class RevisionChange(val author: String, val date: Date, val changes: List<AtomicChange>)
 
+/**
+ * Like [RevisionChange], only all [AtomicChange]s are summarized into [sumChange].
+ */
+data class SummarizedRevisionChange(val author: String, val date: Date, val sumChange: AtomicChange)
+
+/**
+ * Converts [RevisionChange] to [SummarizedRevisionChange].
+ */
+fun RevisionChange.toSummarizedRevisionChange() = SummarizedRevisionChange(
+    author = author,
+    date = date,
+    AtomicChange(
+        inserted = changes.sumOf { change -> change.inserted },
+        deleted = changes.sumOf { change -> change.deleted },
+    ),
+)
+
 
 class RevisionChangeCalculationException(
     revision1: Revision,
