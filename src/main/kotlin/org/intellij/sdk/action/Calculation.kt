@@ -30,6 +30,23 @@ interface CodeOwnerFinder {
 }
 
 /**
+ * A [CodeOwnerFinder], which calculates
+ * authors' knowledge levels independently of each other,
+ * and then groups them into [CodeOwnerResult].
+ */
+abstract class AuthorIndependentCodeOwnerFinder : CodeOwnerFinder {
+    abstract fun calculateKnowledgeLevelOf(author: String, history: History): Double
+
+    override fun find(history: History): CodeOwnerResult {
+        val authors = history.changes.map { it.author }.toSet()
+        val authorToKnowledgeLevel = authors.map { author ->
+            author to calculateKnowledgeLevelOf(author, history)
+        }.toMap()
+        return CodeOwnerResult(authorToKnowledgeLevel)
+    }
+}
+
+/**
  * Main implementation of [CodeOwnerFinder].
  */
 object MainCodeOwnerFinderImpl : CodeOwnerFinder {
