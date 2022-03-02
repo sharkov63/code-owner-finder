@@ -39,9 +39,9 @@ abstract class AuthorIndependentCodeOwnerFinder : CodeOwnerFinder {
 
     override fun find(history: History): CodeOwnerResult {
         val authors = history.changes.map { it.author }.toSet()
-        val authorToKnowledgeLevel = authors.map { author ->
-            author to calculateKnowledgeLevelOf(author, history)
-        }.toMap()
+        val authorToKnowledgeLevel = authors.associateWith { author ->
+            calculateKnowledgeLevelOf(author, history)
+        }
         return CodeOwnerResult(authorToKnowledgeLevel)
     }
 }
