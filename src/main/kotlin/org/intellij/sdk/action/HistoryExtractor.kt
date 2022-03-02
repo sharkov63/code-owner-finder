@@ -9,6 +9,8 @@ import com.intellij.openapi.vcs.history.VcsFileRevision
 import com.intellij.openapi.vcs.history.VcsHistoryProvider
 import com.intellij.openapi.vcs.history.VcsHistorySession
 import com.intellij.openapi.vfs.VirtualFile
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
 
 
 class HistoryExtractionException(
@@ -67,11 +69,13 @@ class HistoryExtractor(
                 virtualFile,
                 "Could not find proper VCS history provider.",
             )
-        val session: VcsHistorySession = vcsHistoryProvider.createSessionFor(filePath)
-            ?: throw HistoryExtractionException(
-                virtualFile,
-                "Could not create VCS history session for the file.",
-            )
+        val session: VcsHistorySession = runBlocking(Dispatchers.IO) {
+            vcsHistoryProvider.createSessionFor(filePath)
+        } ?: throw HistoryExtractionException(
+            virtualFile,
+            "Could not create VCS history session for the file.",
+        )
+
         return session.revisionList.filterNotNull().reversed() // ordered from past to present
     }
 }
