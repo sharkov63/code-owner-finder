@@ -1,6 +1,22 @@
 package org.intellij.sdk.action
 
-class CodeOwnerResult(val _temp: String = "")
+/**
+ * The final result of code owner calculation.
+ * It contains authors, assigned with their knowledge level.
+ *
+ * "Knowledge level" is a measure of
+ * how much of the file an author understands
+ * at the current moment of time.
+ * Authors with higher knowledge level
+ * should be better candidates for "code owner" than
+ * authors with lower knowledge level.
+ *
+ * Knowledge level boundaries might depend on implementation,
+ * but are usually between 0 and 1.
+ */
+data class CodeOwnerResult(
+    val authorToKnowledgeLevel: Map<String, Double>
+)
 
 /**
  * An algorithm, which calculates code owner
