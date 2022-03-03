@@ -32,7 +32,7 @@ data class LoadedVcsFileRevision(
     val content: String,
 ) {
     val lines: List<String> by lazy {
-        content.trim().split("\n")
+        com.intellij.util.diff.Diff.splitLines(content).toList()
     }
     val lineCount: Int = lines.size
 }
