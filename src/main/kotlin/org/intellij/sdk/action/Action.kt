@@ -16,6 +16,7 @@ class CodeOwnerFinderException(message: String? = "") : Exception(
 class CodeOwnerFinderAction : AnAction() {
 
     private val codeOwnerFinder: CodeOwnerFinder = MainCodeOwnerFinderImpl
+    private val diffHistoryCalculator = DiffHistoryCalculator(LengthLineWeightCalculator)
 
     override fun actionPerformed(event: AnActionEvent) {
         val renderer = CodeOwnerFinderDialogRenderer(event.project)
@@ -37,13 +38,17 @@ class CodeOwnerFinderAction : AnAction() {
             ?: throw CodeOwnerFinderException("Invalid project.")
         val virtualFile = event.getData(CommonDataKeys.VIRTUAL_FILE)
             ?: throw CodeOwnerFinderException("No file selected.")
-        val extractor = HistoryExtractor(project)
-        val history = try {
-            extractor.extract(virtualFile)
-        } catch (e: HistoryExtractionException) {
+
+        val revisionLoader = RevisionLoader(project)
+        val revisions = try {
+            revisionLoader.loadAll(virtualFile)
+        } catch (e: RevisionListLoadingException) {
             throw CodeOwnerFinderException(e.message)
         }
-        return codeOwnerFinder.find(history)
+
+        val diffHistory = diffHistoryCalculator.calculate(revisions)
+
+        return codeOwnerFinder.find(diffHistory)
     }
 
     override fun update(event: AnActionEvent) {

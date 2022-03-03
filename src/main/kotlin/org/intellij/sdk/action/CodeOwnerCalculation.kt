@@ -20,13 +20,13 @@ data class CodeOwnerResult(
 
 /**
  * An algorithm, which calculates code owner
- * by given [History] of the file.
+ * by given [DiffHistory] of the file.
  */
 interface CodeOwnerFinder {
     /**
-     * Calculate [CodeOwnerResult] by given [History] of the file.
+     * Calculate [CodeOwnerResult] by given [DiffHistory] of the file.
      */
-    fun find(history: History): CodeOwnerResult
+    fun find(history: DiffHistory): CodeOwnerResult
 }
 
 /**
@@ -35,10 +35,10 @@ interface CodeOwnerFinder {
  * and then groups them into [CodeOwnerResult].
  */
 abstract class AuthorIndependentCodeOwnerFinder : CodeOwnerFinder {
-    abstract fun calculateKnowledgeLevelOf(author: String, history: History): Double
+    abstract fun calculateKnowledgeLevelOf(author: String, history: DiffHistory): Double
 
-    override fun find(history: History): CodeOwnerResult {
-        val authors = history.changes.map { it.author }.toSet()
+    override fun find(history: DiffHistory): CodeOwnerResult {
+        val authors = history.revisions.map { it.author }.toSet()
         val authorToKnowledgeLevel = authors.associateWith { author ->
             calculateKnowledgeLevelOf(author, history)
         }
@@ -49,8 +49,15 @@ abstract class AuthorIndependentCodeOwnerFinder : CodeOwnerFinder {
 /**
  * Main implementation of [CodeOwnerFinder].
  */
-object MainCodeOwnerFinderImpl : CodeOwnerFinder {
-    override fun find(history: History): CodeOwnerResult {
-        TODO("Not yet implemented")
+object MainCodeOwnerFinderImpl : AuthorIndependentCodeOwnerFinder() {
+    override fun calculateKnowledgeLevelOf(author: String, history: DiffHistory): Double {
+//        val summarizedChanges = history.changes.map { it.toSummarizedRevisionChange() }
+//        val authors = summarizedChanges.filter { it.author == author }
+//        return sumOfChanges(authors).toDouble() / sumOfChanges(summarizedChanges).toDouble()
+        TODO()
     }
+
+//    private fun sumOfChanges(changes: List<SummarizedRevisionChange>): Int {
+//        return changes.sumOf { it.sumChange.inserted + it.sumChange.deleted }
+//    }
 }
