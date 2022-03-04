@@ -54,23 +54,20 @@ class DiffHistoryCalculator(
         val content2 = revision2.lines
 
         val lines: MutableList<DiffLine> = mutableListOf()
-        var i = 0
-        for (change in difference.changes) {
-            if (i < change.lineBegin1) {
-                val remaining = content1.subList(i, change.lineBegin1)
-                lines.addAll(remaining)
-            }
-            i = change.lineBegin1 + change.deleted
 
-            if (change.inserted > 0) {
-                val inserted = content2.subList(change.lineBegin2, change.lineBegin2 + change.inserted).map { line ->
-                    val weight = lineWeightCalculator.calculate(line)
-                    DiffLine(revision2.author, revision2.date, weight)
-                }
-                lines.addAll(inserted)
+        val handler = object : DiffExecutorHandler {
+            override fun onStayedLine(line1: Int) {
+                lines.add(content1[line1])
+            }
+            override fun onInsertedLine(line2: Int) {
+                val line = content2[line2]
+                val weight = lineWeightCalculator.calculate(line)
+                val diffLine = DiffLine(revision2.author, revision2.date, weight)
+                lines.add(diffLine)
             }
         }
-        lines.addAll(content1.subList(i, content1.size))
+        DiffExecutor(handler).execute(content1.size, difference)
+
         if (lines.size != content2.size)
             throw DiffHistoryCalculationException("Bad difference applier: the number of lines does not match!")
 
