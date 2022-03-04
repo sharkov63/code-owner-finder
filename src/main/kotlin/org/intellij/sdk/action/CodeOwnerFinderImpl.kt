@@ -75,6 +75,13 @@ interface OblivionFunction {
     }
 }
 
+@Suppress("unused")
+object ConstantOblivionFunction : OblivionFunction {
+    override fun calculateNewKnowledgeLevel(knowledge: Double, timePassed: Duration): Double {
+        return knowledge
+    }
+}
+
 /**
  * Main implementation of [OblivionFunction]:
  * a decreasing exponential function.
@@ -83,7 +90,7 @@ object MainOblivionFunctionImpl : OblivionFunction {
     /**
      * During this period, a developer forgets half of the code he currently remembers.
      */
-    private val halfLife: Duration = with(Duration) { 200.days }
+    private val halfLife: Duration = with(Duration) { 500.days }
 
     override fun calculateNewKnowledgeLevel(knowledge: Double, timePassed: Duration): Double {
         val exp = (timePassed / halfLife).toFloat()
@@ -163,7 +170,7 @@ class AuthorKnowledgeAdder(
 ) {
     companion object {
         const val SPREAD_COEFFICIENT = 6 // to one direction
-        const val READING_KNOWLEDGE_COEFFICIENT = 0.5
+        const val READING_KNOWLEDGE_COEFFICIENT = 1
     }
 
     /**
