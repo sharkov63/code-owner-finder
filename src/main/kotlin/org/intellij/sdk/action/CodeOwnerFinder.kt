@@ -40,12 +40,17 @@ abstract class AuthorIndependentCodeOwnerFinder : CodeOwnerFinder {
     override fun find(history: DiffHistory): CodeOwnerResult {
         val authors = history.revisions.map { it.author }.toSet()
         val authorToKnowledgeLevel = authors.associateWith { author ->
-            calculateKnowledgeLevelOf(author, history)
+            val knowledgeLevel = calculateKnowledgeLevelOf(author, history)
+            if (knowledgeLevel.isInfinite() || knowledgeLevel.isNaN() || knowledgeLevel < 0 || knowledgeLevel > 1) {
+                throw InternalError("Bad CodeOwnerFinder: return knowledge level is '$knowledgeLevel', should be a real between 0 and 1.")
+            }
+            knowledgeLevel
         }
         return CodeOwnerResult(authorToKnowledgeLevel)
     }
 }
 
+@Suppress("unused")
 object SummarizedCodeOwnerFinder : AuthorIndependentCodeOwnerFinder() {
     data class SummarizedRevisionChange(val author: String, val totalChangedLines: Int)
 
