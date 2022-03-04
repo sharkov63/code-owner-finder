@@ -1,5 +1,11 @@
 package org.intellij.sdk.action
 
+/**
+ * [DiffExecutor] can process given [Difference] object,
+ * filtering deleted, inserted, or untouched lines
+ * and passing the information of above lines to
+ * [DiffExecutorHandler].
+ */
 class DiffExecutor(
     private val handler: DiffExecutorHandler,
 ) {
@@ -16,12 +22,18 @@ class DiffExecutor(
                 handler.onInsertedLine(j)
             }
         }
+        // it's important to know size1 at this point
         while (i < size1) {
             handler.onStayedLine(i++)
         }
     }
 }
 
+/**
+ * And object, which can react to events
+ * given by [DiffExecutor].
+ * All actions here do nothing by default.
+ */
 interface DiffExecutorHandler {
     fun onStayedLine(line1: Int): Unit = Unit
     fun onDeletedLine(line1: Int): Unit = Unit

@@ -32,8 +32,12 @@ data class LoadedVcsFileRevision(
     val content: String,
 ) {
     val lines: List<String> by lazy {
+        // It's important here to use the same line split algorithm
+        // as in com.intellij.util.diff.Diff.buildChanges()
+        // to ensure that the lines always match.
         com.intellij.util.diff.Diff.splitLines(content).toList()
     }
+
     val lineCount: Int = lines.size
 }
 
@@ -58,17 +62,18 @@ class RevisionLoader(
     private val vcsContextFactory: VcsContextFactory = VcsContextFactory.SERVICE.getInstance()
 
     /**
-     * Loads all revisions of given [virtualFile].
+     * Load all revisions of given [virtualFile].
      * @return the non-empty list of all [LoadedVcsFileRevision]s of [virtualFile] in order from past to present.
      * @throws [RevisionListLoadingException] if the loading went wrong.
      */
     fun loadAll(virtualFile: VirtualFile): List<LoadedVcsFileRevision> {
         val vcsFileRevisions = getVcsFileRevisions(virtualFile)
-        if (vcsFileRevisions.isEmpty())
+        if (vcsFileRevisions.isEmpty()) {
             throw RevisionListLoadingException(
                 virtualFile,
                 "File has no valid revisions.",
             )
+        }
         return try {
             vcsFileRevisions.map(::loadRevision)
         } catch (e: RevisionLoadingException) {
@@ -108,7 +113,7 @@ class RevisionLoader(
 
     /**
      * Finds all [VcsFileRevision]s of given [virtualFile].
-     * @throws [RevisionListLoadingException].
+     * @throws [RevisionListLoadingException]
      */
     private fun getVcsFileRevisions(virtualFile: VirtualFile): List<VcsFileRevision> {
         val filePath: FilePath = vcsContextFactory.createFilePathOn(virtualFile)

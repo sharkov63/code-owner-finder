@@ -14,18 +14,18 @@ interface CodeOwnerFinderRenderer {
 }
 
 /**
- * Selects [maxAuthors] best candidates,
+ * Selects [maxDevelopers] best candidates,
  * and renders them to string.
  */
-private fun renderResultToTopNLines(result: CodeOwnerResult, maxAuthors: Int): String {
+private fun renderResultToTopNLines(result: CodeOwnerResult, maxDevelopers: Int): String {
     return result
-        .authorToKnowledgeLevel
+        .developerToKnowledgeLevel
         .toList()
         .sortedByDescending { it.second }
-        .take(maxAuthors)
-        .joinToString("\n") { (author, knowledgeLevel) ->
+        .take(maxDevelopers)
+        .joinToString("\n") { (developer, knowledgeLevel) ->
             val percentage = (knowledgeLevel * 100).roundToInt()
-            "$author: knows $percentage%"
+            "$developer: knows $percentage%"
         }
 }
 
@@ -38,12 +38,12 @@ class CodeOwnerFinderDialogRenderer(
 
     companion object {
         const val DIALOG_TITLE = "Code Owner Finder"
-        const val MAX_AUTHORS_IN_RESULT = 5
+        const val MAX_DEVELOPERS_IN_RESULT = 5
     }
 
     override fun success(result: CodeOwnerResult) = Messages.showMessageDialog(
         project,
-        renderResultToTopNLines(result, MAX_AUTHORS_IN_RESULT),
+        renderResultToTopNLines(result, MAX_DEVELOPERS_IN_RESULT),
         DIALOG_TITLE,
         AllIcons.General.SuccessDialog,
     )

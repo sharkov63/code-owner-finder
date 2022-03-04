@@ -7,12 +7,25 @@ import kotlin.math.min
 import kotlin.math.pow
 import kotlin.time.Duration
 
+/**
+ * A composition data class:
+ * contains a [DiffLine] with the corresponding [knowledge] level,
+ * with respect to a specific developer.
+ *
+ * See [KnowledgeState].
+ */
 data class LineWithKnowledge(val line: DiffLine, val knowledge: Double) {
     fun withKnowledge(newKnowledge: Double): LineWithKnowledge {
         return LineWithKnowledge(line, newKnowledge)
     }
 }
 
+/**
+ * A description of how much a specific developer
+ * knows all lines in the file.
+ * @property date the actuality of this [KnowledgeState];
+ * @property lines the actual description: a list of [LineWithKnowledge].
+ */
 data class KnowledgeState(
     val date: Date,
     val lines: List<LineWithKnowledge>,
@@ -31,9 +44,23 @@ data class KnowledgeState(
         get() = totalKnowledge / totalLineWeight.toDouble()
 }
 
+/**
+ * An algorithm which describes
+ * how fast developers forget their code
+ * over large periods of time.
+ */
 interface OblivionFunction {
+    /**
+     * The actual function.
+     * Calculates the new knowledge level,
+     * if at the time of [timePassed] time units ago
+     * the knowledge level was equal to [knowledge].
+     */
     fun calculateNewKnowledgeLevel(knowledge: Double, timePassed: Duration): Double
 
+    /**
+     * Update a given [state] to a given moment of time.
+     */
     fun applyToKnowledgeState(state: KnowledgeState, timePassed: Duration): KnowledgeState {
         return KnowledgeState(
             date = (state.date.toKotlinInstant() + timePassed).toJavaDate(),
@@ -48,7 +75,14 @@ interface OblivionFunction {
     }
 }
 
+/**
+ * Main implementation of [OblivionFunction]:
+ * a decreasing exponential function.
+ */
 object MainOblivionFunctionImpl : OblivionFunction {
+    /**
+     * During this period, a developer forgets half of the code he currently remembers.
+     */
     private val halfLife: Duration = with(Duration) { 200.days }
 
     override fun calculateNewKnowledgeLevel(knowledge: Double, timePassed: Duration): Double {
@@ -57,25 +91,35 @@ object MainOblivionFunctionImpl : OblivionFunction {
     }
 }
 
+
+/**
+ * An object which can update [KnowledgeState],
+ * after certain events happened:
+ * * a new commit has taken place: [nextKnowledgeState]
+ * * some time passed: [updateKnowledgeStateToPresent]
+ */
 interface KnowledgeStateCalculator {
     fun nextKnowledgeState(
-        author: String,
+        developer: String,
         state: KnowledgeState,
         nextRevision: DiffRevision,
     ): KnowledgeState
 
     fun updateKnowledgeStateToPresent(
-        author: String,
+        developer: String,
         state: KnowledgeState,
     ): KnowledgeState
 }
 
+/**
+ * A [KnowledgeStateCalculator], which is based on a given [oblivionFunction].
+ */
 abstract class OblivionKnowledgeStateCalculator(
     private val oblivionFunction: OblivionFunction = MainOblivionFunctionImpl,
 ) : KnowledgeStateCalculator {
 
     override fun nextKnowledgeState(
-        author: String,
+        developer: String,
         state: KnowledgeState,
         nextRevision: DiffRevision,
     ): KnowledgeState {
@@ -83,24 +127,37 @@ abstract class OblivionKnowledgeStateCalculator(
         val instant2 = nextRevision.date.toKotlinInstant()
         val timePassed = instant2 - instant1
         val upToDateState = oblivionFunction.applyToKnowledgeState(state, timePassed)
-        return instantNextKnowledgeState(author, upToDateState, nextRevision)
+        return instantNextKnowledgeState(developer, upToDateState, nextRevision)
     }
 
     override fun updateKnowledgeStateToPresent(
-        author: String,
+        developer: String,
         state: KnowledgeState,
     ): KnowledgeState {
         val timePassed = Clock.System.now() - state.date.toKotlinInstant()
         return oblivionFunction.applyToKnowledgeState(state, timePassed)
     }
 
+    /**
+     * The only abstract method:
+     * we need to define how [KnowledgeState]
+     * changes when a commit happens.
+     */
     abstract fun instantNextKnowledgeState(
-        author: String,
+        developer: String,
         upToDateState: KnowledgeState,
         nextRevision: DiffRevision,
     ): KnowledgeState
 }
 
+/**
+ * An algorithm, which describes
+ * how knowledge is added to the developer's [KnowledgeState],
+ * when he makes a change to the file.
+ *
+ * It consists of taking the list of inserted lines,
+ * and adding some knowledge to some lines around each inserted line.
+ */
 class AuthorKnowledgeAdder(
     private val lines: MutableList<LineWithKnowledge>,
 ) {
@@ -109,17 +166,23 @@ class AuthorKnowledgeAdder(
         const val READING_KNOWLEDGE_COEFFICIENT = 0.5
     }
 
+    /**
+     * Add knowledge for each of [insertedLineIndices].
+     */
     fun addKnowledge(insertedLineIndices: List<Int>) {
         insertedLineIndices.forEach { lineIndex ->
             addKnowledge(lineIndex)
         }
     }
 
+    /**
+     * Add knowledge around given [lineIndex].
+     */
     private fun addKnowledge(lineIndex: Int) {
-        // knowledge by writing
+        // knowledge by writing --- added to this exact line
         lines[lineIndex] = lines[lineIndex].withKnowledge(1.0)
 
-        // knowledge by reading
+        // knowledge by reading --- add to lines around it
         val w = lines[lineIndex].line.weight
         if (w <= 0) {
             return // nothing to add
@@ -132,6 +195,9 @@ class AuthorKnowledgeAdder(
 
     private fun inBounds(index: Int) = index in lines.indices
 
+    /**
+     * Spreads knowledge in a given [direction] from [startingIndex].
+     */
     private fun spreadReadingKnowledge(
         startingIndex: Int,
         direction: Int, // +1 or -1
@@ -174,12 +240,21 @@ class AuthorKnowledgeAdder(
     }
 }
 
+/**
+ * Main implementation of [KnowledgeStateCalculator].
+ *
+ * Works as an [OblivionKnowledgeStateCalculator] with given [oblivionFunction].
+ * A commit change is handled this way:
+ * * if a commit is done by the same developer, add knowledge via [AuthorKnowledgeAdder];
+ * * if a commit is done by another developer, knowledge of untouched lines does not change,
+ * and knowledge of added lines is zero.
+ */
 class MainKnowledgeStateCalculatorImpl(
     oblivionFunction: OblivionFunction = MainOblivionFunctionImpl,
 ) : OblivionKnowledgeStateCalculator(oblivionFunction) {
 
     override fun instantNextKnowledgeState(
-        author: String,
+        developer: String,
         upToDateState: KnowledgeState,
         nextRevision: DiffRevision,
     ): KnowledgeState {
@@ -196,7 +271,7 @@ class MainKnowledgeStateCalculatorImpl(
             }
         }
         DiffExecutor(handler).execute(upToDateState.lines.size, nextRevision.differenceWithPrevious)
-        if (nextRevision.author == author) {
+        if (nextRevision.author == developer) {
             val adder = AuthorKnowledgeAdder(lines)
             adder.addKnowledge(insertedLineIndices)
         }
@@ -204,15 +279,22 @@ class MainKnowledgeStateCalculatorImpl(
     }
 }
 
+
+/**
+ * An implementation of [CodeOwnerFinder],
+ * which calculates the knowledge level
+ * of each developer independently,
+ * by given [knowledgeStateCalculator].
+ */
 class KnowledgeStateCodeOwnerFinder(
     private val knowledgeStateCalculator: KnowledgeStateCalculator = MainKnowledgeStateCalculatorImpl(),
-) : AuthorIndependentCodeOwnerFinder() {
+) : DeveloperIndependentCodeOwnerFinder() {
 
-    override fun calculateKnowledgeLevelOf(author: String, history: DiffHistory): Double {
+    override fun calculateKnowledgeLevelOf(developer: String, history: DiffHistory): Double {
         val knowledgeState = history.revisions.fold(KnowledgeState.INITIAL) { knowledgeState, diffRevision ->
-            knowledgeStateCalculator.nextKnowledgeState(author, knowledgeState, diffRevision)
+            knowledgeStateCalculator.nextKnowledgeState(developer, knowledgeState, diffRevision)
         }
-        val upToDateState = knowledgeStateCalculator.updateKnowledgeStateToPresent(author, knowledgeState)
+        val upToDateState = knowledgeStateCalculator.updateKnowledgeStateToPresent(developer, knowledgeState)
         return upToDateState.totalKnowledgeLevel
     }
 }

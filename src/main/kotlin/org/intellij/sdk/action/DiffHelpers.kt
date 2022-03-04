@@ -50,13 +50,15 @@ class DifferenceCalculationException(
     revision1: LoadedVcsFileRevision,
     revision2: LoadedVcsFileRevision,
     message: String = "",
-): Exception("Could not calculate difference between revisions ${revision1.revisionNumber} and ${revision2.revisionNumber}:\n$message")
+): Exception(
+    "Could not calculate difference between revisions ${revision1.revisionNumber} and ${revision2.revisionNumber}:\n$message"
+)
+
 
 /**
  * Given two revisions, calculates their [Difference].
  *
- * [revision1] is null if [revision2] is the first revision in the history of the file.
- * @throws [DifferenceCalculationException].
+ * @throws [DifferenceCalculationException]
  */
 fun calculateDifference(revision1: LoadedVcsFileRevision, revision2: LoadedVcsFileRevision): Difference {
     val headChange: Diff.Change = try {
@@ -90,7 +92,7 @@ data class DiffLine(val author: String, val date: Date, val weight: Int)
 /**
  * Represents a specific file revision,
  * storing [content] in a convenient format:
- * each line is represented by [DiffLine].
+ * each line is represented by an instance of [DiffLine].
  */
 data class DiffRevision(
     val revisionNumber: VcsRevisionNumber,

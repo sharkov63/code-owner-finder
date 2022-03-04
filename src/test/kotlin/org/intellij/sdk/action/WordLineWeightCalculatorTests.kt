@@ -38,6 +38,6 @@ internal class WordLineWeightCalculatorTests {
     @Test
     fun `Correct word count on source code`() {
         singleTest("WordLineWeightCalculator.calculate(line)", 6)
-        singleTest("override fun calculateKnowledgeLevelOf(author: String, history: DiffHistory): Double {", 12)
+        singleTest("override fun calculateKnowledgeLevelOf(developer: String, history: DiffHistory): Double {", 12)
     }
 }

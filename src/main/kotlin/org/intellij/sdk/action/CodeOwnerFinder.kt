@@ -2,20 +2,19 @@ package org.intellij.sdk.action
 
 /**
  * The final result of code owner calculation.
- * It contains authors, assigned with their knowledge level.
+ * It contains developers, assigned with their knowledge level.
  *
  * "Knowledge level" is a measure of
- * how much of the file an author understands
+ * how much of the file a developer understands
  * at the current moment of time.
- * Authors with higher knowledge level
+ * Developers with higher knowledge level
  * should be better candidates for "code owner" than
- * authors with lower knowledge level.
+ * developers with lower knowledge level.
  *
- * Knowledge level boundaries might depend on implementation,
- * but are usually between 0 and 1.
+ * Knowledge level boundaries should be between 0 and 1.
  */
 data class CodeOwnerResult(
-    val authorToKnowledgeLevel: Map<String, Double>
+    val developerToKnowledgeLevel: Map<String, Double>
 )
 
 /**
@@ -31,27 +30,34 @@ interface CodeOwnerFinder {
 
 /**
  * A [CodeOwnerFinder], which calculates
- * authors' knowledge levels independently of each other,
+ * developers' knowledge levels independently of each other,
  * and then groups them into [CodeOwnerResult].
  */
-abstract class AuthorIndependentCodeOwnerFinder : CodeOwnerFinder {
-    abstract fun calculateKnowledgeLevelOf(author: String, history: DiffHistory): Double
+abstract class DeveloperIndependentCodeOwnerFinder : CodeOwnerFinder {
+    abstract fun calculateKnowledgeLevelOf(developer: String, history: DiffHistory): Double
 
     override fun find(history: DiffHistory): CodeOwnerResult {
-        val authors = history.revisions.map { it.author }.toSet()
-        val authorToKnowledgeLevel = authors.associateWith { author ->
-            val knowledgeLevel = calculateKnowledgeLevelOf(author, history)
+        val developers = history.revisions.map { it.author }.toSet()
+        val developerToKnowledgeLevel = developers.associateWith { developer ->
+            val knowledgeLevel = calculateKnowledgeLevelOf(developer, history)
             if (knowledgeLevel.isInfinite() || knowledgeLevel.isNaN() || knowledgeLevel < 0 || knowledgeLevel > 1) {
-                throw InternalError("Bad CodeOwnerFinder: return knowledge level is '$knowledgeLevel', should be a real between 0 and 1.")
+                throw InternalError(
+                    "Bad CodeOwnerFinder: returned knowledge level of developer $developer is '$knowledgeLevel', should be a real between 0 and 1."
+                )
             }
             knowledgeLevel
         }
-        return CodeOwnerResult(authorToKnowledgeLevel)
+        return CodeOwnerResult(developerToKnowledgeLevel)
     }
 }
 
+/**
+ * Simple implementation of [CodeOwnerFinder]:
+ * It calculates developer's knowledge level
+ * as the proportion of changes that belong to him.
+ */
 @Suppress("unused")
-object SummarizedCodeOwnerFinder : AuthorIndependentCodeOwnerFinder() {
+object SummarizedCodeOwnerFinder : DeveloperIndependentCodeOwnerFinder() {
     data class SummarizedRevisionChange(val author: String, val totalChangedLines: Int)
 
     private fun DiffRevision.toSummarizedRevisionChange(): SummarizedRevisionChange {
@@ -61,10 +67,10 @@ object SummarizedCodeOwnerFinder : AuthorIndependentCodeOwnerFinder() {
         )
     }
 
-    override fun calculateKnowledgeLevelOf(author: String, history: DiffHistory): Double {
+    override fun calculateKnowledgeLevelOf(developer: String, history: DiffHistory): Double {
         val summarizedChanges = history.revisions.map { it.toSummarizedRevisionChange() }
-        val byAuthor = summarizedChanges.filter { it.author == author }
-        return sumOfChanges(byAuthor).toDouble() / sumOfChanges(summarizedChanges).toDouble()
+        val byDeveloper = summarizedChanges.filter { it.author == developer }
+        return sumOfChanges(byDeveloper).toDouble() / sumOfChanges(summarizedChanges).toDouble()
     }
 
     private fun sumOfChanges(changes: List<SummarizedRevisionChange>): Int {

@@ -2,19 +2,13 @@ package org.intellij.sdk.action
 
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import java.time.Instant
-import java.util.Date
 
 internal class CalculateDifferenceTests {
 
-    private val revisionNumber = DummyVcsRevisionNumber
-    private val author = "testAuthor"
-    private val date = Date.from(Instant.now())
-
     private fun wrapContentToRevision(content: String) = LoadedVcsFileRevision(
-        revisionNumber = revisionNumber,
-        author = author,
-        date = date,
+        revisionNumber = testRevisionNumber,
+        author = testAuthor,
+        date = testDate,
         content = content,
     )
 

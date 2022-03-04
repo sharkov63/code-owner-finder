@@ -5,14 +5,21 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 
 /**
- * Entry point of the plugin,
- * the actual action in IDEA.
+ * The actual action in IDEA.
  */
 class CodeOwnerFinderAction : AnAction() {
 
-    private val codeOwnerFinder: CodeOwnerFinder = KnowledgeStateCodeOwnerFinder()
     private val diffHistoryCalculator = DiffHistoryCalculator(WordLineWeightCalculator)
 
+    /**
+     * Selected [CodeOwnerFinder] algorithm.
+     */
+    private val codeOwnerFinder: CodeOwnerFinder = KnowledgeStateCodeOwnerFinder()
+
+    /**
+     * Entry point of the plugin.
+     * This function is called every time user presses "Find Code Owner...".
+     */
     override fun actionPerformed(event: AnActionEvent) {
         val renderer = CodeOwnerFinderDialogRenderer(event.project)
         val result = try {
@@ -26,6 +33,7 @@ class CodeOwnerFinderAction : AnAction() {
     }
 
     /**
+     * Main logic function.
      * @throws [CodeOwnerFinderException]
      */
     private fun findCodeOwner(event: AnActionEvent): CodeOwnerResult {

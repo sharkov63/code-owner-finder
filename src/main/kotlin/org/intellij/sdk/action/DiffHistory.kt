@@ -20,7 +20,7 @@ class DiffHistoryCalculator(
      * Given the timeline of [revisions],
      * calculate [DiffHistory] of the file.
      *
-     * @throws [DiffHistoryCalculationException].
+     * @throws [DiffHistoryCalculationException]
      */
     fun calculate(revisions: List<LoadedVcsFileRevision>): DiffHistory {
         if (revisions.isEmpty()) return DiffHistory(listOf())
@@ -40,6 +40,9 @@ class DiffHistoryCalculator(
     }
 
     /**
+     * Given old [DiffRevision], [difference]
+     * and new [LoadedVcsFileRevision],
+     * calculate new [DiffRevision].
      * @throws [DiffHistoryCalculationException]
      */
     private fun applyDifferenceToRevision(
