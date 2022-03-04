@@ -46,18 +46,23 @@ abstract class AuthorIndependentCodeOwnerFinder : CodeOwnerFinder {
     }
 }
 
-/**
- * Main implementation of [CodeOwnerFinder].
- */
-object MainCodeOwnerFinderImpl : AuthorIndependentCodeOwnerFinder() {
-    override fun calculateKnowledgeLevelOf(author: String, history: DiffHistory): Double {
-//        val summarizedChanges = history.changes.map { it.toSummarizedRevisionChange() }
-//        val authors = summarizedChanges.filter { it.author == author }
-//        return sumOfChanges(authors).toDouble() / sumOfChanges(summarizedChanges).toDouble()
-        TODO()
+object SummarizedCodeOwnerFinder : AuthorIndependentCodeOwnerFinder() {
+    data class SummarizedRevisionChange(val author: String, val totalChangedLines: Int)
+
+    private fun DiffRevision.toSummarizedRevisionChange(): SummarizedRevisionChange {
+        return SummarizedRevisionChange(
+            author = author,
+            totalChangedLines = changes.sumOf { it.deleted + it.inserted },
+        )
     }
 
-//    private fun sumOfChanges(changes: List<SummarizedRevisionChange>): Int {
-//        return changes.sumOf { it.sumChange.inserted + it.sumChange.deleted }
-//    }
+    override fun calculateKnowledgeLevelOf(author: String, history: DiffHistory): Double {
+        val summarizedChanges = history.revisions.map { it.toSummarizedRevisionChange() }
+        val byAuthor = summarizedChanges.filter { it.author == author }
+        return sumOfChanges(byAuthor).toDouble() / sumOfChanges(summarizedChanges).toDouble()
+    }
+
+    private fun sumOfChanges(changes: List<SummarizedRevisionChange>): Int {
+        return changes.sumOf { it.totalChangedLines }
+    }
 }

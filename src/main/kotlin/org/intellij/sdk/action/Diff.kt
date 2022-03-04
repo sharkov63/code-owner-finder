@@ -99,4 +99,8 @@ data class DiffRevision(
 ) {
     val author: String
         get() = differenceWithPrevious.author
+    val date: Date
+        get() = differenceWithPrevious.date
+    val changes: List<DiffChange>
+        get() = differenceWithPrevious.changes
 }

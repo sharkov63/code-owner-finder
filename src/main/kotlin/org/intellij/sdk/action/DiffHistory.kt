@@ -94,8 +94,8 @@ class DiffHistoryCalculator(
                 DiffChange(
                     deleted = 0,
                     inserted = lineCount,
-                    lineBegin1 = 1,
-                    lineBegin2 = 1,
+                    lineBegin1 = 0,
+                    lineBegin2 = 0,
                 )
             )
         )

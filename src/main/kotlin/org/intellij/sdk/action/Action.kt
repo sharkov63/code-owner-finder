@@ -3,11 +3,7 @@ package org.intellij.sdk.action
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
-
-class CodeOwnerFinderException(message: String? = "") : Exception(
-    "Could not find code owner: $message"
-)
-
+import com.intellij.openapi.diagnostic.Logger
 
 /**
  * Entry point of the plugin,
@@ -15,7 +11,7 @@ class CodeOwnerFinderException(message: String? = "") : Exception(
  */
 class CodeOwnerFinderAction : AnAction() {
 
-    private val codeOwnerFinder: CodeOwnerFinder = MainCodeOwnerFinderImpl
+    private val codeOwnerFinder: CodeOwnerFinder = KnowledgeStateCodeOwnerFinder()
     private val diffHistoryCalculator = DiffHistoryCalculator(LengthLineWeightCalculator)
 
     override fun actionPerformed(event: AnActionEvent) {
