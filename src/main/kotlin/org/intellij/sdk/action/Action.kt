@@ -3,7 +3,6 @@ package org.intellij.sdk.action
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
-import com.intellij.openapi.diagnostic.Logger
 
 /**
  * Entry point of the plugin,
@@ -12,7 +11,7 @@ import com.intellij.openapi.diagnostic.Logger
 class CodeOwnerFinderAction : AnAction() {
 
     private val codeOwnerFinder: CodeOwnerFinder = KnowledgeStateCodeOwnerFinder()
-    private val diffHistoryCalculator = DiffHistoryCalculator(LengthLineWeightCalculator)
+    private val diffHistoryCalculator = DiffHistoryCalculator(WordLineWeightCalculator)
 
     override fun actionPerformed(event: AnActionEvent) {
         val renderer = CodeOwnerFinderDialogRenderer(event.project)
