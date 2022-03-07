@@ -93,7 +93,7 @@ object ConstantOblivionFunction : OblivionFunction {
  * Main implementation of [OblivionFunction]:
  * a decreasing exponential function.
  */
-object MainOblivionFunctionImpl : OblivionFunction {
+object OblivionFunctionImpl : OblivionFunction {
     /**
      * During this period, a developer forgets half of the code he currently remembers.
      */
@@ -130,7 +130,7 @@ interface KnowledgeStateCalculator {
  * A [KnowledgeStateCalculator], which is based on a given [oblivionFunction].
  */
 abstract class OblivionKnowledgeStateCalculator(
-    private val oblivionFunction: OblivionFunction = MainOblivionFunctionImpl,
+    private val oblivionFunction: OblivionFunction = OblivionFunctionImpl,
 ) : KnowledgeStateCalculator {
 
     override fun nextKnowledgeState(
@@ -329,8 +329,8 @@ object LineKnowledgeAdderImpl : LineKnowledgeAdder {
  * Works as an [OblivionKnowledgeStateCalculator] with given [oblivionFunction].
  * A commit change is handled by [adder].
  */
-class MainKnowledgeStateCalculatorImpl(
-    oblivionFunction: OblivionFunction = MainOblivionFunctionImpl,
+class KnowledgeStateCalculatorImpl(
+    oblivionFunction: OblivionFunction = OblivionFunctionImpl,
     private val adder: LineKnowledgeAdder = LineKnowledgeAdderImpl,
 ) : OblivionKnowledgeStateCalculator(oblivionFunction) {
 
@@ -366,7 +366,7 @@ class MainKnowledgeStateCalculatorImpl(
  * by given [knowledgeStateCalculator].
  */
 class KnowledgeStateCodeOwnerFinder(
-    private val knowledgeStateCalculator: KnowledgeStateCalculator = MainKnowledgeStateCalculatorImpl(),
+    private val knowledgeStateCalculator: KnowledgeStateCalculator = KnowledgeStateCalculatorImpl(),
 ) : DeveloperIndependentCodeOwnerFinder() {
 
     override fun calculateKnowledgeLevelOf(developer: String, history: DiffHistory): Double {
