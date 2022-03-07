@@ -23,17 +23,23 @@ data class LineWithKnowledge(val line: DiffLine, val knowledge: Double) {
 }
 
 /**
- * A description of how much a specific developer
- * knows all lines in the file.
+ * A description of how much a [developer]
+ * knows the file.
+ * @property developer
  * @property date the actuality of this [KnowledgeState];
  * @property lines the actual description: a list of [LineWithKnowledge].
  */
 data class KnowledgeState(
+    val developer: String,
     val date: Date,
     val lines: List<LineWithKnowledge>,
 ) {
     companion object {
-        val INITIAL = KnowledgeState(Instant.DISTANT_PAST.toJavaDate(), listOf())
+        fun initialState(developer: String) = KnowledgeState(
+            developer = developer,
+            date = Instant.DISTANT_PAST.toJavaDate(),
+            lines = listOf(),
+        )
     }
 
     val totalLineWeight: Int
@@ -46,6 +52,7 @@ data class KnowledgeState(
         get() = totalKnowledge / totalLineWeight.toDouble()
 
     fun withLines(newLines: List<LineWithKnowledge>) = KnowledgeState(
+        developer = developer,
         date = date,
         lines = newLines,
     )
@@ -68,18 +75,17 @@ interface OblivionFunction {
     /**
      * Update a given [state] to a given moment of time.
      */
-    fun applyToKnowledgeState(state: KnowledgeState, timePassed: Duration): KnowledgeState {
-        return KnowledgeState(
-            date = (state.date.toKotlinInstant() + timePassed).toJavaDate(),
-            lines = state.lines.map { line ->
-                val newKnowledge = calculateNewKnowledgeLevel(
-                    knowledge = line.knowledge,
-                    timePassed = timePassed,
-                )
-                line.withKnowledge(newKnowledge)
-            }
-        )
-    }
+    fun applyToKnowledgeState(state: KnowledgeState, timePassed: Duration) = KnowledgeState (
+        developer = state.developer,
+        date = (state.date.toKotlinInstant() + timePassed).toJavaDate(),
+        lines = state.lines.map { line ->
+            val newKnowledge = calculateNewKnowledgeLevel(
+                knowledge = line.knowledge,
+                timePassed = timePassed,
+            )
+            line.withKnowledge(newKnowledge)
+        }
+    )
 }
 
 @Suppress("unused")
@@ -114,16 +120,8 @@ object OblivionFunctionImpl : OblivionFunction {
  * * some time passed: [updateKnowledgeStateToPresent]
  */
 interface KnowledgeStateCalculator {
-    fun nextKnowledgeState(
-        developer: String,
-        state: KnowledgeState,
-        nextRevision: DiffRevision,
-    ): KnowledgeState
-
-    fun updateKnowledgeStateToPresent(
-        developer: String,
-        state: KnowledgeState,
-    ): KnowledgeState
+    fun nextKnowledgeState(state: KnowledgeState, nextRevision: DiffRevision): KnowledgeState
+    fun updateKnowledgeStateToPresent(state: KnowledgeState): KnowledgeState
 }
 
 /**
@@ -133,22 +131,15 @@ abstract class OblivionKnowledgeStateCalculator(
     private val oblivionFunction: OblivionFunction = OblivionFunctionImpl,
 ) : KnowledgeStateCalculator {
 
-    override fun nextKnowledgeState(
-        developer: String,
-        state: KnowledgeState,
-        nextRevision: DiffRevision,
-    ): KnowledgeState {
+    override fun nextKnowledgeState(state: KnowledgeState, nextRevision: DiffRevision): KnowledgeState {
         val instant1 = state.date.toKotlinInstant()
         val instant2 = nextRevision.date.toKotlinInstant()
         val timePassed = instant2 - instant1
         val upToDateState = oblivionFunction.applyToKnowledgeState(state, timePassed)
-        return instantNextKnowledgeState(developer, upToDateState, nextRevision)
+        return instantNextKnowledgeState(upToDateState, nextRevision)
     }
 
-    override fun updateKnowledgeStateToPresent(
-        developer: String,
-        state: KnowledgeState,
-    ): KnowledgeState {
+    override fun updateKnowledgeStateToPresent(state: KnowledgeState): KnowledgeState {
         val timePassed = Clock.System.now() - state.date.toKotlinInstant()
         return oblivionFunction.applyToKnowledgeState(state, timePassed)
     }
@@ -159,7 +150,6 @@ abstract class OblivionKnowledgeStateCalculator(
      * changes when a commit happens.
      */
     abstract fun instantNextKnowledgeState(
-        developer: String,
         upToDateState: KnowledgeState,
         nextRevision: DiffRevision,
     ): KnowledgeState
@@ -174,8 +164,7 @@ abstract class OblivionKnowledgeStateCalculator(
 interface LineKnowledgeAdder {
     /**
      * Calculates the knowledge addition
-     * based on given [developer],
-     * his knowledge [state]
+     * based on knowledge [state]
      * and [insertedLineIndices] (enumerated from 0).
      *
      * @return a list of reals from 0 to 1 -
@@ -183,7 +172,6 @@ interface LineKnowledgeAdder {
      * to each line correspondingly.
      */
     fun calculateAddition(
-        developer: String,
         state: KnowledgeState,
         insertedLineIndices: List<Int>,
     ): List<Double>
@@ -195,11 +183,10 @@ interface LineKnowledgeAdder {
      * @return new [KnowledgeState] with added knowledge.
      */
     fun add(
-        developer: String,
         state: KnowledgeState,
         insertedLineIndices: List<Int>,
     ): KnowledgeState {
-        val addition = calculateAddition(developer, state, insertedLineIndices)
+        val addition = calculateAddition(state, insertedLineIndices)
         if (addition.size != state.lines.size) {
             throw InternalError(
                 "Bad LineKnowledgeAdder implementation: calculateAddition() returned addition," +
@@ -226,16 +213,15 @@ object LineKnowledgeAdderImpl : LineKnowledgeAdder {
     private const val READING_KNOWLEDGE_COEFFICIENT = 1.0
 
     override fun calculateAddition(
-        developer: String,
         state: KnowledgeState,
         insertedLineIndices: List<Int>
-    ) = AdditionBuilder(developer, state, insertedLineIndices).build()
+    ) = AdditionBuilder(state, insertedLineIndices).build()
 
     private class AdditionBuilder(
-        private val developer: String,
         state: KnowledgeState,
         private val insertedLineIndices: List<Int>,
     ) {
+        private val developer = state.developer
         private val lines = state.lines
         private val size = lines.size
 
@@ -335,7 +321,6 @@ class KnowledgeStateCalculatorImpl(
 ) : OblivionKnowledgeStateCalculator(oblivionFunction) {
 
     override fun instantNextKnowledgeState(
-        developer: String,
         upToDateState: KnowledgeState,
         nextRevision: DiffRevision,
     ): KnowledgeState {
@@ -354,7 +339,7 @@ class KnowledgeStateCalculatorImpl(
         DiffExecutor(handler).execute(upToDateState.lines.size, nextRevision.differenceWithPrevious)
 
         val stateWithInsertedLines = upToDateState.withLines(lines)
-        return adder.add(developer, stateWithInsertedLines, insertedLineIndices)
+        return adder.add(stateWithInsertedLines, insertedLineIndices)
     }
 }
 
@@ -370,10 +355,10 @@ class KnowledgeStateCodeOwnerFinder(
 ) : DeveloperIndependentCodeOwnerFinder() {
 
     override fun calculateKnowledgeLevelOf(developer: String, history: DiffHistory): Double {
-        val knowledgeState = history.revisions.fold(KnowledgeState.INITIAL) { knowledgeState, diffRevision ->
-            knowledgeStateCalculator.nextKnowledgeState(developer, knowledgeState, diffRevision)
+        val knowledgeState = history.revisions.fold(KnowledgeState.initialState(developer)) { knowledgeState, diffRevision ->
+            knowledgeStateCalculator.nextKnowledgeState(knowledgeState, diffRevision)
         }
-        val upToDateState = knowledgeStateCalculator.updateKnowledgeStateToPresent(developer, knowledgeState)
+        val upToDateState = knowledgeStateCalculator.updateKnowledgeStateToPresent(knowledgeState)
         return upToDateState.totalKnowledgeLevel
     }
 }
