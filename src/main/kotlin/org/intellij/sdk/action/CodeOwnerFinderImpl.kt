@@ -210,7 +210,6 @@ object LineKnowledgeAdderImpl : LineKnowledgeAdder {
     private const val SPREAD_COEFFICIENT = 6 // to one direction
     private const val SAME_AUTHOR_WRITING_KNOWLEDGE = 1.0
     private const val OTHER_AUTHOR_WRITING_KNOWLEDGE = 0.0
-    private const val READING_KNOWLEDGE_COEFFICIENT = 1.0
 
     override fun calculateAddition(
         state: KnowledgeState,
@@ -302,7 +301,7 @@ object LineKnowledgeAdderImpl : LineKnowledgeAdder {
             } else {
                 sum(remainingWeight - weight + 1, remainingWeight).toDouble() / spreadWeight.toDouble()
             }
-            val scaledAbsoluteDelta = absoluteDelta * READING_KNOWLEDGE_COEFFICIENT
+            val scaledAbsoluteDelta = absoluteDelta
             val relativeDelta = scaledAbsoluteDelta / weight
             addAt(index, relativeDelta)
         }
