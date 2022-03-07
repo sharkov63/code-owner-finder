@@ -90,7 +90,8 @@ object MainOblivionFunctionImpl : OblivionFunction {
     /**
      * During this period, a developer forgets half of the code he currently remembers.
      */
-    private val halfLife: Duration = with(Duration) { 500.days }
+    private const val HALF_LIFE_IN_DAYS = 500
+    private val halfLife: Duration = with(Duration) { HALF_LIFE_IN_DAYS.days }
 
     override fun calculateNewKnowledgeLevel(knowledge: Double, timePassed: Duration): Double {
         val exp = (timePassed / halfLife).toFloat()
