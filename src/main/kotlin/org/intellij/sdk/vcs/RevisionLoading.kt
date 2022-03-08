@@ -1,4 +1,4 @@
-package org.intellij.sdk.action
+package org.intellij.sdk.vcs
 
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vcs.AbstractVcs

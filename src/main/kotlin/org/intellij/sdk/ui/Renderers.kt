@@ -1,8 +1,11 @@
-package org.intellij.sdk.action
+package org.intellij.sdk.ui
 
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.Messages
+import org.intellij.sdk.CodeOwnerFinderException
+import org.intellij.sdk.CodeOwnerResult
+import org.intellij.sdk.action.CodeOwnerFinderAction
 import kotlin.math.roundToInt
 
 /**

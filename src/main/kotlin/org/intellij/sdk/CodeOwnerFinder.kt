@@ -1,4 +1,7 @@
-package org.intellij.sdk.action
+package org.intellij.sdk
+
+import org.intellij.sdk.diff.DiffHistory
+import org.intellij.sdk.diff.DiffRevision
 
 /**
  * The final result of code owner calculation.

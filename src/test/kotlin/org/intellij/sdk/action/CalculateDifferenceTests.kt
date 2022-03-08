@@ -1,5 +1,8 @@
 package org.intellij.sdk.action
 
+import org.intellij.sdk.diff.DiffChange
+import org.intellij.sdk.diff.calculateDifference
+import org.intellij.sdk.vcs.LoadedVcsFileRevision
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 

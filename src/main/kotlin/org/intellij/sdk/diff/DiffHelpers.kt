@@ -1,8 +1,10 @@
-package org.intellij.sdk.action
+package org.intellij.sdk.diff
 
 import com.intellij.openapi.vcs.history.VcsRevisionNumber
 import com.intellij.util.diff.Diff
 import com.intellij.util.diff.FilesTooBigForDiffException
+import org.intellij.sdk.vcs.LoadedVcsFileRevision
+import org.intellij.sdk.algo.*
 import java.util.*
 
 /**

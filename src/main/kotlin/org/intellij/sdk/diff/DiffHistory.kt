@@ -1,4 +1,7 @@
-package org.intellij.sdk.action
+package org.intellij.sdk.diff
+
+import org.intellij.sdk.algo.LineWeightCalculator
+import org.intellij.sdk.vcs.LoadedVcsFileRevision
 
 
 /**

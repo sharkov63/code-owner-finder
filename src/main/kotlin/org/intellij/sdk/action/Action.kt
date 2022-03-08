@@ -3,6 +3,15 @@ package org.intellij.sdk.action
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
+import org.intellij.sdk.CodeOwnerFinder
+import org.intellij.sdk.CodeOwnerFinderException
+import org.intellij.sdk.CodeOwnerResult
+import org.intellij.sdk.algo.KnowledgeStateCodeOwnerFinder
+import org.intellij.sdk.algo.WordLineWeightCalculator
+import org.intellij.sdk.diff.DiffHistoryCalculator
+import org.intellij.sdk.ui.CodeOwnerFinderDialogRenderer
+import org.intellij.sdk.vcs.RevisionListLoadingException
+import org.intellij.sdk.vcs.RevisionLoader
 
 /**
  * The actual action in IDEA.

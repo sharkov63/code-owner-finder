@@ -1,4 +1,6 @@
-package org.intellij.sdk.action
+package org.intellij.sdk.algo
+
+import org.intellij.sdk.diff.*
 
 /**
  * Any object which can calculate the weight of a [DiffLine].
@@ -30,7 +32,7 @@ object WordLineWeightCalculator : LineWeightCalculator {
 
     override fun calculate(line: String): Int {
         val tokens = line.trim().split("\\s+".toRegex())
-        return tokens.sumOf(::wordsInToken)
+        return tokens.sumOf(WordLineWeightCalculator::wordsInToken)
     }
 
     enum class WordType {

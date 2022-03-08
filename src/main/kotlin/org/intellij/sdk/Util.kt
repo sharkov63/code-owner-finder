@@ -1,4 +1,4 @@
-package org.intellij.sdk.action
+package org.intellij.sdk
 
 import kotlinx.datetime.Instant
 import kotlinx.datetime.toJavaInstant

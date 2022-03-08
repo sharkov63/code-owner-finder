@@ -1,4 +1,4 @@
-package org.intellij.sdk.action
+package org.intellij.sdk.diff
 
 /**
  * [DiffExecutor] can process given [Difference] object,

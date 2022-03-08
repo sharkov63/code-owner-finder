@@ -1,5 +1,7 @@
 package org.intellij.sdk.action
 
+import org.intellij.sdk.algo.LineWeightCalculator
+import org.intellij.sdk.algo.WordLineWeightCalculator
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
