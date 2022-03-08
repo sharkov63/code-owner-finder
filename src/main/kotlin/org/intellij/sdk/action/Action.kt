@@ -14,19 +14,11 @@ import org.intellij.sdk.vcs.RevisionListLoadingException
 import org.intellij.sdk.vcs.RevisionLoader
 
 /**
- * The actual action in IDEA.
+ * The "Find Code Owner..." action in IDEA.
  */
 class CodeOwnerFinderAction : AnAction() {
-
-    private val diffHistoryCalculator = DiffHistoryCalculator(WordLineWeightCalculator)
-
     /**
-     * Selected [CodeOwnerFinder] algorithm.
-     */
-    private val codeOwnerFinder: CodeOwnerFinder = KnowledgeStateCodeOwnerFinder()
-
-    /**
-     * Entry point of the plugin.
+     * Entry point of the "find code owner" action.
      * This function is called every time user presses "Find Code Owner...".
      */
     override fun actionPerformed(event: AnActionEvent) {
@@ -58,8 +50,10 @@ class CodeOwnerFinderAction : AnAction() {
             throw CodeOwnerFinderException(e.message)
         }
 
+        val diffHistoryCalculator = DiffHistoryCalculator(WordLineWeightCalculator)
         val diffHistory = diffHistoryCalculator.calculate(revisions)
 
+        val codeOwnerFinder: CodeOwnerFinder = KnowledgeStateCodeOwnerFinder()
         return codeOwnerFinder.find(diffHistory)
     }
 
