@@ -301,8 +301,7 @@ object LineKnowledgeAdderImpl : LineKnowledgeAdder {
             } else {
                 sum(remainingWeight - weight + 1, remainingWeight).toDouble() / spreadWeight.toDouble()
             }
-            val scaledAbsoluteDelta = absoluteDelta
-            val relativeDelta = scaledAbsoluteDelta / weight
+            val relativeDelta = absoluteDelta / weight
             addAt(index, relativeDelta)
         }
     }
