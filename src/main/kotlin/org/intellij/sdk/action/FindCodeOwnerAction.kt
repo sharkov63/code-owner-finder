@@ -16,7 +16,7 @@ import org.intellij.sdk.vcs.RevisionLoader
 /**
  * The "Find Code Owner..." action in IDEA.
  */
-class CodeOwnerFinderAction : AnAction() {
+class FindCodeOwnerAction : AnAction() {
     /**
      * Entry point of the "find code owner" action.
      * This function is called every time user presses "Find Code Owner...".

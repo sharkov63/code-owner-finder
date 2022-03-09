@@ -17,10 +17,10 @@
 
     <actions>
         <!-- Add your actions here -->
-        <action id="org.intellij.sdk.action.CodeOwnerFinderAction" 
-                class="org.intellij.sdk.action.CodeOwnerFinderAction" 
+        <action id="org.intellij.sdk.action.FindCodeOwnerAction"
+                class="org.intellij.sdk.action.FindCodeOwnerAction"
                 text="Find Code Owner..."
-                description="JB Bootcamp test task" >
+                description="Finds code owner of given file." >
             <add-to-group group-id="ProjectViewPopupMenu" anchor="first"/>
         </action>
     </actions>

@@ -5,11 +5,11 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.Messages
 import org.intellij.sdk.CodeOwnerFinderException
 import org.intellij.sdk.CodeOwnerResult
-import org.intellij.sdk.action.CodeOwnerFinderAction
+import org.intellij.sdk.action.FindCodeOwnerAction
 import kotlin.math.roundToInt
 
 /**
- * An object which can show results of [CodeOwnerFinderAction] to the user.
+ * An object which can show results of [FindCodeOwnerAction] to the user.
  */
 interface CodeOwnerFinderRenderer {
     fun success(result: CodeOwnerResult)
